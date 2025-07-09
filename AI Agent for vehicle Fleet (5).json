@@ -1,0 +1,1793 @@
+{
+  "name": "AI Agent for vehicle Fleet",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1Llg9-2z8jTtjJJEQKP46IKYfDNRqdQNKFouhAHdgnKg",
+          "mode": "list",
+          "cachedResultName": "Dataset 3",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Llg9-2z8jTtjJJEQKP46IKYfDNRqdQNKFouhAHdgnKg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2126547379,
+          "mode": "list",
+          "cachedResultName": "Form Responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Llg9-2z8jTtjJJEQKP46IKYfDNRqdQNKFouhAHdgnKg/edit#gid=2126547379"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1720,
+        -200
+      ],
+      "id": "e061cf71-2bd3-431a-86ff-1b1cdd058a9f",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "fWS4DSdCzOZxnHNn",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Google Sheets Trigger').item.json['Email id'] }}",
+        "subject": "Maintenance alert",
+        "emailType": "text",
+        "message": "={{ $json['output'] }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        580,
+        -1080
+      ],
+      "id": "cb76a116-6612-4720-9f33-a4db68dc032b",
+      "name": "Send a message",
+      "webhookId": "12097829-aa5f-43b8-b32a-26482f0422f8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "q4aZcDJRcgiLt3EH",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9cfa65db-3250-4de2-bc3a-3c2f0db5e139",
+              "leftValue": "={{ $json['Tyre Pressure'] }}",
+              "rightValue": 25,
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            },
+            {
+              "id": "e4c6f9b5-e7cf-450c-a931-5b6f1487bd64",
+              "leftValue": "={{ $json['Month you lastly changed the Engine Oil'] }}",
+              "rightValue": 10,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "2028e978-8ef4-487f-884b-7430ff5cc362",
+              "leftValue": "={{ $json['Battery %'] }}",
+              "rightValue": 30,
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1140,
+        -200
+      ],
+      "id": "24a0237f-e62d-40e0-b4ca-b9cc3c3fe68f",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=\"Write a formal email to notify a driver about low tyre pressure. Use the driver's name from the 'Name' column and include their vehicle ID from the 'Vehicle ID' column. Do not mention the dataset or include any placeholders in the email. Ensure the email DOSEN'T includes a subject line and maintains a professional tone. company name : XYZ  TRAVELS\nTiruppur garage : AAA GARAGE\nCBE GARRAGE :BBB GARAGE\nSALEM GARRAGE :CCC GARAGE\"\n{{ $json['Email id'] }}{{ $json['Your vehicle Id'] }}{{ $json.Location }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        120,
+        -1080
+      ],
+      "id": "b63bfd7d-dbd8-4e23-8030-c6cc241dab9f",
+      "name": "AI Agent4"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        120,
+        -900
+      ],
+      "id": "ea451dcf-df5c-4854-b1bb-12786eca8914",
+      "name": "Google Gemini Chat Model4",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "etoQXeTg5ZRkaGMv",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=\"Write a formal email to notify a driver that the engine oil needs to be changed. Use the driver's name from the 'Name' column and include their vehicle ID from the 'Vehicle ID' column. Do not include a subject line. Do not mention the dataset or include any placeholders in the email. The email should be sent from XZY Travels and maintain a professional tone.\nTiruppur garage : AAA GARAGE\nCBE GARRAGE :BBB GARAGE\nSALEM GARRAGE :CCC GARAGE\"\"{{ $json['Email id'] }}{{ $json.Name }}{{ $json['Your vehicle Id'] }}{{ $json.Location }}",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        80,
+        -720
+      ],
+      "id": "cc833cc3-913f-4ec0-884e-f9b2ee103054",
+      "name": "AI Agent5"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        80,
+        -540
+      ],
+      "id": "fa81a09b-b5d0-4a23-9ca2-6311c5ddd06a",
+      "name": "Google Gemini Chat Model5",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "etoQXeTg5ZRkaGMv",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Google Sheets Trigger').item.json['Email id'] }}",
+        "subject": "Maintenance alert",
+        "emailType": "text",
+        "message": "={{ $json['output'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        460,
+        -720
+      ],
+      "id": "8cf6e5b7-853e-47c5-8615-055ed268e87f",
+      "name": "Send a message2",
+      "webhookId": "12097829-aa5f-43b8-b32a-26482f0422f8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "q4aZcDJRcgiLt3EH",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Write a formal email to notify a driver about low battery percentage. Use the driver's name and contact details from the dataset, specifically the 'Name' column for the name. Do not mention the dataset or include any placeholders in the email itself.{{ $json.Name }}{{ $json['Email id'] }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        80,
+        20
+      ],
+      "id": "32a60b9e-573f-4b2b-a776-383ac4194ee1",
+      "name": "AI Agent6"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Google Sheets Trigger').item.json['Email id'] }}",
+        "subject": "Maintenance alert",
+        "emailType": "text",
+        "message": "={{ $json['output'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        460,
+        20
+      ],
+      "id": "905f7111-30c5-4e24-b3a2-1aad9ebb4eb3",
+      "name": "Send a message4",
+      "webhookId": "12097829-aa5f-43b8-b32a-26482f0422f8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "q4aZcDJRcgiLt3EH",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        80,
+        180
+      ],
+      "id": "c7aedf66-b045-404c-afa3-7e6041eb292e",
+      "name": "Google Gemini Chat Model6",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "etoQXeTg5ZRkaGMv",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=\"Write a formal email to notify a driver that their vehicle requires attention due to the following issues: low tyre pressure, the need for an engine oil change, and low battery percentage. The recipient’s name and contact details will be provided, but do not mention the source of the data or use placeholders in the email. Keep the tone professional and clear, and advise the driver to take prompt action.\" {{ $json.Name }}{{ $json['Your vehicle Id'] }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -540,
+        -1700
+      ],
+      "id": "e889b004-ad60-4b27-a9b2-9af87f35e556",
+      "name": "AI Agent8"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -540,
+        -1480
+      ],
+      "id": "a4df842d-dc4e-4c4c-9f54-e536a4266521",
+      "name": "Google Gemini Chat Model8",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "etoQXeTg5ZRkaGMv",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "60d78ff4-5535-4aa4-8937-8d18e15dd350",
+              "leftValue": "={{ $json['Tyre Pressure'] }}",
+              "rightValue": 25,
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            },
+            {
+              "id": "e6b42479-d9b0-4857-bd65-8e57354cc0eb",
+              "leftValue": "={{ $json['Month you lastly changed the Engine Oil'] }}",
+              "rightValue": 10,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -640,
+        -820
+      ],
+      "id": "136d3328-3bb5-4054-ab1c-89bbcb6e5465",
+      "name": "If4"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Google Sheets Trigger').item.json['Email id'] }}",
+        "subject": "Maintenance alert",
+        "emailType": "text",
+        "message": "={{ $json['output'] }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -160,
+        -1700
+      ],
+      "id": "270af06f-a0aa-4ae5-aa0b-4866b0613e3e",
+      "name": "Send a message7",
+      "webhookId": "12097829-aa5f-43b8-b32a-26482f0422f8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "q4aZcDJRcgiLt3EH",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "60d78ff4-5535-4aa4-8937-8d18e15dd350",
+              "leftValue": "={{ $json['Battery %'] }}",
+              "rightValue": 10,
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            },
+            {
+              "id": "e6b42479-d9b0-4857-bd65-8e57354cc0eb",
+              "leftValue": "={{ $json['Month you lastly changed the Engine Oil'] }}",
+              "rightValue": 10,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -600,
+        -180
+      ],
+      "id": "24a04edf-99ed-4efb-889d-19f7bf3bfbb6",
+      "name": "If5"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=\"Write a formal email to notify a driver that their vehicle requires attention due to two issues: low tyre pressure and the need for an engine oil change. The recipient’s name and contact details will be provided, but do not mention the source of the data or use placeholders in the email. Keep the tone professional and clear, advising the driver to take prompt action.\"{{ $json['Email id'] }} {{ $json.Name }}{{ $json['Your vehicle Id'] }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -460,
+        -1340
+      ],
+      "id": "8511ecbd-a800-44b5-b09f-48900d33107e",
+      "name": "AI Agent9"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -460,
+        -1140
+      ],
+      "id": "f2ac442e-3290-4cfa-9dec-017832fadc08",
+      "name": "Google Gemini Chat Model9",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "etoQXeTg5ZRkaGMv",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Google Sheets Trigger').item.json['Email id'] }}",
+        "subject": "Maintenance alert",
+        "emailType": "text",
+        "message": "={{ $json['output'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -140,
+        -1340
+      ],
+      "id": "c8d448af-9384-4170-ad46-961d0748cd2f",
+      "name": "Send a message8",
+      "webhookId": "12097829-aa5f-43b8-b32a-26482f0422f8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "q4aZcDJRcgiLt3EH",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "60d78ff4-5535-4aa4-8937-8d18e15dd350",
+              "leftValue": "={{ $json['Tyre Pressure'] }}",
+              "rightValue": 25,
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -300,
+        -800
+      ],
+      "id": "f33189f4-404f-4b19-8988-9319145d5926",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Google Sheets Trigger').item.json['Email id'] }}",
+        "subject": "Maintenance alert",
+        "emailType": "text",
+        "message": "={{ $json['output'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        100,
+        -420
+      ],
+      "id": "0b9ebe12-0b07-46e1-bb67-983c63c69d23",
+      "name": "Send a message6",
+      "webhookId": "12097829-aa5f-43b8-b32a-26482f0422f8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "q4aZcDJRcgiLt3EH",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "60d78ff4-5535-4aa4-8937-8d18e15dd350",
+              "leftValue": "={{ $json['Battery %'] }}",
+              "rightValue": 10,
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -220,
+        40
+      ],
+      "id": "96dd3c29-80d8-4f5c-a3f6-a449dc1274e3",
+      "name": "If6"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=\"Write a formal email to notify a driver that the engine oil needs to be changed. The recipient's name and contact details will be provided. Do not include a subject line. Do not mention the source of the data or use any placeholders in the email. Mention the appropriate garage based on the location: AAA GARAGE for Tiruppur, BBB GARAGE for Coimbatore (CBE), and CCC GARAGE for Salem. Keep the tone professional and clear, and advise the driver to take prompt action.COMPANY NAME :ABC COMPANY\"{{ $json.Location }}{{ $json.Name }}{{ $json['Email id'] }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        140,
+        360
+      ],
+      "id": "fe08e57a-7ae2-4c3c-8f6b-6884192f563c",
+      "name": "AI Agent11"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Google Sheets Trigger').item.json['Email id'] }}",
+        "subject": "Maintenance alert",
+        "emailType": "text",
+        "message": "={{ $json['output'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        480,
+        360
+      ],
+      "id": "93757642-63f7-4f66-9930-ff344a0c94f2",
+      "name": "Send a message9",
+      "webhookId": "12097829-aa5f-43b8-b32a-26482f0422f8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "q4aZcDJRcgiLt3EH",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        140,
+        540
+      ],
+      "id": "933b68ad-6a4b-4c71-a180-783269077eb6",
+      "name": "Google Gemini Chat Model10",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "etoQXeTg5ZRkaGMv",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "60d78ff4-5535-4aa4-8937-8d18e15dd350",
+              "leftValue": "={{ $json['Battery %'] }}",
+              "rightValue": 10,
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            },
+            {
+              "id": "e6b42479-d9b0-4857-bd65-8e57354cc0eb",
+              "leftValue": "={{ $json['Tyre Pressure'] }}",
+              "rightValue": 10,
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1320,
+        340
+      ],
+      "id": "bbd51d9b-4090-406a-a3da-d129bf794419",
+      "name": "If7"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=\"Write a formal email to notify a driver that their vehicle requires attention due to low battery percentage and low tyre pressure. The recipient’s name and contact details will be provided, but do not mention the source of the data or use placeholders in the email. Keep the tone professional and clear, and advise the driver to take prompt action.\"{{ $json.Name }}{{ $json['Email id'] }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -1060,
+        320
+      ],
+      "id": "8818de1e-8589-4059-815b-5a9a41bc7904",
+      "name": "AI Agent12"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1060,
+        520
+      ],
+      "id": "95b89836-0119-4736-b700-c07ee8dbef76",
+      "name": "Google Gemini Chat Model11",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "etoQXeTg5ZRkaGMv",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Google Sheets Trigger').item.json['Email id'] }}",
+        "subject": "Maintenance alert",
+        "emailType": "text",
+        "message": "={{ $json['output'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -720,
+        320
+      ],
+      "id": "02de8113-7bdf-45ad-aa85-f87cdc219240",
+      "name": "Send a message10",
+      "webhookId": "12097829-aa5f-43b8-b32a-26482f0422f8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "q4aZcDJRcgiLt3EH",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=\"Write a formal email to notify a driver that their vehicle requires attention due to the following issues: low battery percentage, low tyre pressure, and the need for an engine oil change. The recipient’s name and contact details will be provided, but do not mention the source of the data or use placeholders in the email. Keep the tone professional and clear, and advise the driver to take prompt action.\" {{ $json.Name }}{{ $json['Your vehicle Id'] }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        80,
+        -1700
+      ],
+      "id": "807a8fd5-7908-4aaf-b193-c34eb4e25e8e",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        80,
+        -1500
+      ],
+      "id": "a5277ee9-f134-4d8a-ab06-8ef6bffe470f",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "etoQXeTg5ZRkaGMv",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "=asuriyaa336@gmail.com",
+        "subject": "Maintenance alert",
+        "emailType": "text",
+        "message": "={{ $json['output'] }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        460,
+        -1700
+      ],
+      "id": "6934dce4-5d0b-4ae4-9c0c-e757619e7a16",
+      "name": "Send a message11",
+      "webhookId": "12097829-aa5f-43b8-b32a-26482f0422f8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "q4aZcDJRcgiLt3EH",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=\"Write a formal email to inform a manager that a vehicle under their supervision requires attention due to low tyre pressure and the need for an engine oil change. The manager’s name and contact details will be provided, but do not mention the source of the data or use placeholders in the email. Maintain a professional tone and clearly request appropriate action to address the issues.\"{{ $json.Name }}{{ $json['Your vehicle Id'] }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        80,
+        -1340
+      ],
+      "id": "8d64e162-df5c-4def-90a9-b734a516078c",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -1160
+      ],
+      "id": "df072c25-e7ce-4be4-900a-ac8d6e200203",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "etoQXeTg5ZRkaGMv",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Google Sheets Trigger').item.json['Email id'] }}",
+        "subject": "Maintenance alert",
+        "emailType": "text",
+        "message": "={{ $json['output'] }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        420,
+        -1340
+      ],
+      "id": "a864ffb9-9a0f-4630-ae05-fa7b76f48886",
+      "name": "Send a message12",
+      "webhookId": "12097829-aa5f-43b8-b32a-26482f0422f8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "q4aZcDJRcgiLt3EH",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "60d78ff4-5535-4aa4-8937-8d18e15dd350",
+              "leftValue": "={{ $('If4').item.json['Month you lastly changed the Engine Oil'] }}",
+              "rightValue": 10,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -140,
+        -680
+      ],
+      "id": "f5b2c893-9bda-4206-9729-b8ab1ce507f1",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=\"Write a formal email to notify a manager that a driver's vehicle requires an engine oil change. Use the driver's name from the 'Name' column and include their vehicle ID from the 'Vehicle ID' column. Do not include a subject line. Do not mention the dataset or include any placeholders in the email. The email should be sent from XZY Travels and maintain a professional tone.\"manager name: MADHAN\n{{ $('If2').item.json['Your vehicle Id'] }}  {{ $('If2').item.json['Month you lastly changed the Engine Oil'] }}{{ $('If2').item.json.Name }}",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        720,
+        -720
+      ],
+      "id": "d2047bb1-c40c-495f-9f45-ccfe510ce7f5",
+      "name": "AI Agent7"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        720,
+        -520
+      ],
+      "id": "e754b7df-2df5-4815-9739-a88ec57ad684",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "etoQXeTg5ZRkaGMv",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "=asuriyaa336@gmail.com",
+        "subject": "Maintenance alert",
+        "emailType": "text",
+        "message": "={{ $json['output'] }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1080,
+        -720
+      ],
+      "id": "e08c05ea-6ad9-4bcd-ad5d-6aa29f71afb2",
+      "name": "Send a message13",
+      "webhookId": "12097829-aa5f-43b8-b32a-26482f0422f8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "q4aZcDJRcgiLt3EH",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=\"Write a formal email to notify a manager that a driver's vehicle requires attention due to low battery percentage and the need for an engine oil change. The driver's name and vehicle ID will be provided. Do not include a subject line. Do not mention the source of the data or use any placeholders in the email. Keep the tone professional and clear, and advise that the driver should take prompt action.MANAGER NAME MADHAN.{{ $('If5').item.json['Your vehicle Id'] }}{{ $('If5').item.json.Name }}",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        360,
+        -420
+      ],
+      "id": "de2428b3-04ac-4c4c-a03e-3a64559c4698",
+      "name": "AI Agent13"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        360,
+        -220
+      ],
+      "id": "4690f12e-f0a2-4ea5-badc-0bd910a8bbff",
+      "name": "Google Gemini Chat Model7",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "etoQXeTg5ZRkaGMv",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "=asuriyaa336@gmail.com",
+        "subject": "Maintenance alert",
+        "emailType": "text",
+        "message": "={{ $json['output'] }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        940,
+        -340
+      ],
+      "id": "e0a64b33-8de0-4a72-9f15-d497d9f5d4b1",
+      "name": "Send a message14",
+      "webhookId": "12097829-aa5f-43b8-b32a-26482f0422f8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "q4aZcDJRcgiLt3EH",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=\"Write a formal email to notify a manager that their vehicle requires attention due to low battery percentage and the need for an engine oil change. The recipient’s name and contact details will be provided, but do not mention the source of the data or use placeholders in the email. Keep the tone professional and clear, and advise the driver to take prompt action.\"{{ $json.Name }}{{ $json['Email id'] }}",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        680,
+        20
+      ],
+      "id": "3019efa2-f0e1-47dd-8055-00fb89b874fe",
+      "name": "AI Agent14"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        680,
+        220
+      ],
+      "id": "a168db43-49e1-420a-b31b-e477f4177343",
+      "name": "Google Gemini Chat Model12",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "etoQXeTg5ZRkaGMv",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Write a formal email to notify a driver that their vehicle requires attention due to low battery percentage and the need for an engine oil change. The recipient’s name and contact details will be provided. Do not include a subject line. Do not mention the source of the data or use any placeholders in the email. Keep the tone professional and clear, and advise the driver to take prompt action.company name XYZ company\nTiruppur garage : AAA GARAGE\nCBE GARRAGE :BBB GARAGE\nSALEM GARRAGE :CCC GARAGE\"\"\n{{ $json.Location }}\n{{ $json.Name }}{{ $json['Email id'] }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -260,
+        -420
+      ],
+      "id": "8b035a88-f181-43b6-9fb6-5206b83d75a8",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -260,
+        -240
+      ],
+      "id": "8d80f5e0-48f5-4e1a-97e6-a06f736b30dc",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "etoQXeTg5ZRkaGMv",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "=asuriyaa336@gmail.com",
+        "subject": "Maintenance alert",
+        "emailType": "text",
+        "message": "={{ $json['output'] }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1020,
+        20
+      ],
+      "id": "b9a10230-6432-483d-9af9-3407f9c81329",
+      "name": "Send a message15",
+      "webhookId": "12097829-aa5f-43b8-b32a-26482f0422f8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "q4aZcDJRcgiLt3EH",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=\"Write a formal email to notify a driver that the engine oil needs to be changed. The recipient's name and contact details will be provided. Do not include a subject line. Do not mention the dataset or use any placeholders in the email. The email should be sent from ABC COMPANY and must maintain a professional and clear tone.\"{{ $('If5').item.json.Name }}{{ $('If5').item.json['Email id'] }}{{ $('If5').item.json.Location }}{{ $('If5').item.json['Your vehicle Id'] }}\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        680,
+        360
+      ],
+      "id": "3d0fdcf5-2e86-4966-b7ce-ea76281e2d19",
+      "name": "AI Agent15"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        680,
+        540
+      ],
+      "id": "99dbd651-e5ac-4036-a5d9-781bdfacf395",
+      "name": "Google Gemini Chat Model13",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "etoQXeTg5ZRkaGMv",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "=asuriyaa336@gmail.com",
+        "subject": "Maintenance alert",
+        "emailType": "text",
+        "message": "={{ $json['output'] }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1020,
+        360
+      ],
+      "id": "a6b4fbc5-69df-4fb0-8754-3e6f389a0865",
+      "name": "Send a message16",
+      "webhookId": "12097829-aa5f-43b8-b32a-26482f0422f8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "q4aZcDJRcgiLt3EH",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=\"Write a formal email to notify a driver that the engine oil needs to be changed. The recipient's name and contact details will be provided. Do not include a subject line. Do not mention the dataset or use any placeholders in the email. The email should be sent from ABC COMPANY and must maintain a professional and clear tone.\"{{ $('If5').item.json.Name }}{{ $('If5').item.json['Email id'] }}{{ $('If5').item.json.Location }}{{ $('If5').item.json['Your vehicle Id'] }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -520,
+        320
+      ],
+      "id": "966d2674-f6aa-4db7-ae8b-93655bef80b3",
+      "name": "AI Agent3"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -520,
+        520
+      ],
+      "id": "7faf93b5-0a5b-46f7-9ec6-6d3009283137",
+      "name": "Google Gemini Chat Model14",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "etoQXeTg5ZRkaGMv",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "=asuriyaa336@gmail.com",
+        "subject": "Maintenance alert",
+        "emailType": "text",
+        "message": "={{ $json['output'] }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -200,
+        320
+      ],
+      "id": "458f8756-98b6-4867-aa5d-e37ee1a98e0c",
+      "name": "Send a message17",
+      "webhookId": "12097829-aa5f-43b8-b32a-26482f0422f8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "q4aZcDJRcgiLt3EH",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        []
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent8",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If4",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If5",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent4": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent5",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent5": {
+      "main": [
+        [
+          {
+            "node": "Send a message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent6": {
+      "main": [
+        [
+          {
+            "node": "Send a message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model6": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent6",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message4": {
+      "main": [
+        [
+          {
+            "node": "AI Agent14",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model8": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent8",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If4": {
+      "main": [
+        [
+          {
+            "node": "AI Agent9",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent8": {
+      "main": [
+        [
+          {
+            "node": "Send a message7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model9": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent9",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent9": {
+      "main": [
+        [
+          {
+            "node": "Send a message8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If5": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If6": {
+      "main": [
+        [
+          {
+            "node": "AI Agent6",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent11": {
+      "main": [
+        [
+          {
+            "node": "Send a message9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model10": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent11",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If7": {
+      "main": [
+        [
+          {
+            "node": "AI Agent12",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model11": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent12",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent12": {
+      "main": [
+        [
+          {
+            "node": "Send a message10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message7": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a message11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message11": {
+      "main": [
+        []
+      ]
+    },
+    "Send a message8": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Send a message12",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent7",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent7": {
+      "main": [
+        [
+          {
+            "node": "Send a message13",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message6": {
+      "main": [
+        [
+          {
+            "node": "AI Agent13",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model7": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent13",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent13": {
+      "main": [
+        [
+          {
+            "node": "Send a message14",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model12": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent14",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Send a message6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent14": {
+      "main": [
+        [
+          {
+            "node": "Send a message15",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message9": {
+      "main": [
+        [
+          {
+            "node": "AI Agent15",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model13": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent15",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent15": {
+      "main": [
+        [
+          {
+            "node": "Send a message16",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message10": {
+      "main": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model14": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent3": {
+      "main": [
+        [
+          {
+            "node": "Send a message17",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b63d80c9-d55c-490e-97d0-98a4876e3b8d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9b575a9bbe59fdd5f8e16a3a3be846e26779bf5ae5fc385e3f6e1efac841880d"
+  },
+  "id": "CIkkywbnf9OkGYiU",
+  "tags": []
+}
