@@ -13,3 +13,4 @@ Salem).
 issues.
 - Improved vehicle maintenance efficiency by 40%, reducing unexpected downtimes.
 - Fully automated, scalable and customizable with zero manual intervention required.
+![Screenshot 2025-07-08 230941](https://github.com/user-attachments/assets/2c41e09d-3be3-4661-a9b7-4e6ad1160d0a)
